@@ -1,0 +1,91 @@
+{% extends 'core/base.html' %}
+{% block title %}Pregunta {{ index_display }} | Millonario{% endblock %}
+{% block content %}
+<div class="grid lg:grid-cols-[1fr_320px] gap-6">
+  <div class="space-y-4">
+    <div class="bg-slate-800 rounded-2xl p-5">
+      <div class="text-sm text-slate-400">Pregunta {{ index_display }} de {{ total }}</div>
+      <h2 class="text-xl md:text-2xl font-bold leading-snug mt-1">{{ question.text }}</h2>
+    </div>
+
+    <!-- Cronómetro -->
+    <div class="bg-slate-700 text-center rounded-xl py-2">
+      <span class="text-sm text-slate-300">Tiempo restante:</span>
+      <span id="timer" class="text-lg font-bold text-amber-400">02:00</span>
+    </div>
+
+    <form id="answer-form" action="{% url 'core:submit_answer' %}" method="post" class="space-y-3">
+      {% csrf_token %}
+      <div class="grid gap-3">
+        {% for c in choices %}
+            <label class="opt bg-slate-800 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-slate-700 transition relative">
+                <input type="radio" name="choice_label" value="{{ c.label }}" class="hidden peer" required>
+                <span class="w-9 h-9 grid place-items-center rounded-full font-bold bg-slate-700 peer-checked:bg-amber-400 peer-checked:text-slate-900 transition">{{ c.label }}</span>
+                <span class="text-base peer-checked:text-amber-300 transition">{{ c.text }}</span>
+                <div class="absolute inset-0 rounded-xl peer-checked:ring-4 peer-checked:ring-amber-400 peer-checked:bg-amber-400/10 transition"></div>
+            </label>
+        {% endfor %}
+      </div>
+      <button class="w-full md:w-auto px-5 py-3 rounded-2xl bg-amber-500 text-slate-900 font-bold shadow hover:scale-[1.02] transition">Responder</button>
+    </form>
+
+    <details class="bg-slate-800 rounded-2xl p-4">
+      <summary class="cursor-pointer text-slate-300">¿Necesitas recordar cómo resolver ecuaciones lineales?</summary>
+      <div class="text-slate-300 mt-2 text-sm leading-relaxed">
+        Aísla la incógnita aplicando operaciones inversas a ambos lados (sumar/restar, multiplicar/dividir)
+        respetando el equilibrio. Verifica sustituyendo tu resultado en la ecuación.
+      </div>
+    </details>
+  </div>
+
+  <aside class="space-y-4">
+    <div class="bg-slate-800 rounded-2xl p-4">
+      <h3 class="font-semibold mb-2">Comodines</h3>
+      <div class="grid grid-cols-2 gap-2">
+        <button data-ll="5050" class="ll px-3 py-2 rounded-xl bg-slate-700 {% if lifelines.5050 %}opacity-50 pointer-events-none{% endif %}">50:50</button>
+        <button data-ll="audiencia" class="ll px-3 py-2 rounded-xl bg-slate-700 {% if lifelines.audiencia %}opacity-50 pointer-events-none{% endif %}">Audiencia</button>
+        <button data-ll="amigo" class="ll px-3 py-2 rounded-xl bg-slate-700 {% if lifelines.amigo %}opacity-50 pointer-events-none{% endif %}">Amigo</button>
+        <button data-ll="cambiar" class="ll px-3 py-2 rounded-xl bg-slate-700 {% if lifelines.cambiar %}opacity-50 pointer-events-none{% endif %}">Cambiar</button>
+      </div>
+      <div id="ll-out" class="text-sm text-slate-300 mt-3"></div>
+    </div>
+
+    <div class="bg-slate-800 rounded-2xl p-4">
+      <h3 class="font-semibold mb-2">Progreso</h3>
+      <ol class="ladder space-y-1">
+        {% for prize in ladder %}
+          {% with idx=forloop.revcounter %}
+            <li class="bg-slate-700 {% if idx == current_index %}actual{% elif idx < current_index %}ganado{% endif %} {% if idx in safe_havens %}safe{% endif %}">
+              {{ prize }}
+            </li>
+          {% endwith %}
+        {% endfor %}
+      </ol>
+      <div class="text-slate-300 mt-2">Puntuación actual: <b>{{ score }}</b></div>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// === Cronómetro de 2 minutos ===
+(function(){
+  var totalSeconds = 120; // 2:00
+  var timerEl = document.getElementById('timer');
+  var tick = setInterval(function(){
+    totalSeconds--;
+    var m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+    var s = String(totalSeconds%60).padStart(2,'0');
+    if (timerEl) timerEl.textContent = m + ':' + s;
+
+    if (totalSeconds <= 0) {
+      clearInterval(tick);
+      alert('⏰ ¡Se acabó el tiempo!');
+      // Vamos al resultado marcando timeout=1 para que el servidor calcule el premio asegurado
+      window.location.href = "{% url 'core:result' %}?timeout=1";
+    }
+  }, 1000);
+})();
+</script>
+{% endblock %}

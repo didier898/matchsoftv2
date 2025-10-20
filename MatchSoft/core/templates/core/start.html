@@ -1,0 +1,47 @@
+{% extends 'core/base.html' %}
+{% block title %}Inicio | Olimpiadas Matemáticas{% endblock %}
+
+{% block content %}
+<div class="text-center mb-8">
+  <h1 class="text-4xl md:text-5xl font-extrabold text-amber-400 drop-shadow-lg mb-2">
+    OLIMPIADAS MATEMÁTICAS
+  </h1>
+  <h2 class="text-2xl md:text-3xl font-semibold text-slate-200">
+    I.E.D. Rodrigo Vives de Andreis
+  </h2>
+  <h3 class="text-lg md:text-xl text-slate-400 mt-1">
+    Docente: <span class="font-semibold text-slate-100">Didier Silva</span>
+  </h3>
+</div>
+
+<div class="grid md:grid-cols-2 gap-6 items-center">
+  <!-- Lado izquierdo -->
+  <div class="space-y-4">
+    <h2 class="text-xl font-bold mb-2 text-slate-100">
+      Modo: Ecuaciones lineales de primer grado
+    </h2>
+    <p class="text-slate-300 mb-4 leading-relaxed">
+      Responde correctamente 20 preguntas, desde la más fácil hasta la más desafiante.
+      Usa tus comodines con sabiduría: <b>50:50</b>, <b>Audiencia</b>, <b>Amigo</b> y <b>Cambiar pregunta</b>.
+      <br><br>
+      ¡Demuestra tus habilidades y conviértete en el campeón matemático!
+    </p>
+
+    <form action="{% url 'core:game' %}" method="get">
+      <button class="px-6 py-3 rounded-2xl bg-amber-500 text-slate-900 font-bold shadow hover:scale-[1.03] hover:bg-amber-400 transition">
+        ¡Comenzar!
+      </button>
+    </form>
+  </div>
+
+  <!-- Lado derecho: tabla de premios -->
+  <div class="bg-slate-800 rounded-2xl p-5 shadow-lg">
+    <h3 class="font-semibold mb-3 text-slate-100">Tabla de premios (puntos)</h3>
+    <ol class="ladder space-y-1">
+      {% for prize in ladder %}
+        <li class="bg-slate-700 text-slate-200">{{ prize }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>
+{% endblock %}
