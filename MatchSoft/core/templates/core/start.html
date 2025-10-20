@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Inicio | Olimpiadas Matemáticas{% endblock %}
 
 {% block content %}
@@ -18,13 +19,14 @@
   <!-- Lado izquierdo -->
   <div class="space-y-4">
     <h2 class="text-xl font-bold mb-2 text-slate-100">
-      Modo: Ecuaciones lineales de primer grado
+      Modo: 3 preguntas con imágenes — 10 min por pregunta
     </h2>
     <p class="text-slate-300 mb-4 leading-relaxed">
-      Responde correctamente 20 preguntas, desde la más fácil hasta la más desafiante.
+      Responde correctamente 3 problemas tipo Olimpiadas (con figuras).  
+      Tiempo límite: <b>10 minutos</b> por cada pregunta.  
       Usa tus comodines con sabiduría: <b>50:50</b>, <b>Audiencia</b>, <b>Amigo</b> y <b>Cambiar pregunta</b>.
       <br><br>
-      ¡Demuestra tus habilidades y conviértete en el campeón matemático!
+      ¡Demuestra tus habilidades y conviértete en el campeón!
     </p>
 
     <form action="{% url 'core:game' %}" method="get">

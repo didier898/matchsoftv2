@@ -9,14 +9,20 @@ from django.utils.dateparse import parse_datetime
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
+import random
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST
+from .models import Question
+from .forms import AnswerForm
+import time
 
-PRIZE_LADDER = [100,200,300,500,1000, 2000,3000,5000,7000,10000,
-                15000,25000,40000,60000,90000, 120000,160000,210000,270000,350000]
-SAFE_HAVENS = {5,10,15}
+
+PRIZE_LADDER = [210000,270000,350000]
+SAFE_HAVENS = { }
 LIFELINES = ['5050','audiencia','amigo','cambiar']
 
-def home(request):
-    return render(request, "core/start.html")
+
 
 @never_cache
 def restart(request):
@@ -25,19 +31,36 @@ def restart(request):
     return redirect('core:start')
 
 def _init_session(request):
+    # Selecciona exactamente 3 preguntas (orden por dificultad 1..3 si existen)
     order = []
-    for lvl in range(1, 21):
+    for lvl in range(1, 4):  # 👈 solo 3
         pool = list(Question.objects.filter(difficulty=lvl)) or list(Question.objects.all())
         if not pool:
             break
-        order.append(random.choice(pool).id)
+        # Evita repetidos
+        pick = random.choice(pool)
+        while pick.id in order and len(pool) > 1:
+            pick = random.choice(pool)
+        order.append(pick.id)
+
+    # Por si hay más/menos de 3, recorta o rellena
+    if len(order) > 3:
+        order = order[:3]
+    elif len(order) < 3:
+        # rellena con cualquiera distinta si hay
+        extras = list(Question.objects.exclude(id__in=order))
+        random.shuffle(extras)
+        for e in extras:
+            if len(order) >= 3: break
+            order.append(e.id)
+
     request.session['game'] = {
         'order': order,
         'index': 0,
         'used_questions': [],
         'score': 0,
         'lifelines': {k: False for k in LIFELINES},
-        'started_at': timezone.now().isoformat(),  # 👈 guardamos inicio
+        'started_ts': int(time.time()),
     }
     request.session.modified = True
 

@@ -5,6 +5,8 @@ class Question(models.Model):
     text = models.TextField()
     explanation = models.TextField(blank=True)
     difficulty = models.PositiveSmallIntegerField(choices=DIFFICULTY_CHOICES, default=1)
+    # Ruta estática opcional a la imagen (por ejemplo: "core/img/p1.png")
+    image = models.CharField(max_length=255, blank=True, help_text="Ruta estática, ej.: core/img/p1.png")
 
     def __str__(self):
         return f'Pregunta {self.id} (Nivel {self.difficulty})'

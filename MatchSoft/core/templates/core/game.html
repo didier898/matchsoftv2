@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
-{% block title %}Pregunta {{ index_display }} | Millonario{% endblock %}
+{% load static %}
+{% block title %}Pregunta {{ index_display }} | Olimpiadas{% endblock %}
 {% block content %}
 <div class="grid lg:grid-cols-[1fr_320px] gap-6">
   <div class="space-y-4">
@@ -8,10 +9,16 @@
       <h2 class="text-xl md:text-2xl font-bold leading-snug mt-1">{{ question.text }}</h2>
     </div>
 
-    <!-- Cronómetro -->
+    {% if question.image %}
+    <div class="bg-slate-800 rounded-2xl p-5">
+      <img src="{% static question.image %}" alt="Figura de la pregunta" class="mx-auto rounded-lg max-h-[420px] object-contain">
+    </div>
+    {% endif %}
+
+    <!-- Cronómetro (10 minutos) -->
     <div class="bg-slate-700 text-center rounded-xl py-2">
       <span class="text-sm text-slate-300">Tiempo restante:</span>
-      <span id="timer" class="text-lg font-bold text-amber-400">02:00</span>
+      <span id="timer" class="text-lg font-bold text-amber-400">10:00</span>
     </div>
 
     <form id="answer-form" action="{% url 'core:submit_answer' %}" method="post" class="space-y-3">
@@ -30,10 +37,9 @@
     </form>
 
     <details class="bg-slate-800 rounded-2xl p-4">
-      <summary class="cursor-pointer text-slate-300">¿Necesitas recordar cómo resolver ecuaciones lineales?</summary>
+      <summary class="cursor-pointer text-slate-300">¿Pista?</summary>
       <div class="text-slate-300 mt-2 text-sm leading-relaxed">
-        Aísla la incógnita aplicando operaciones inversas a ambos lados (sumar/restar, multiplicar/dividir)
-        respetando el equilibrio. Verifica sustituyendo tu resultado en la ecuación.
+        Considera aplicar el teorema del coseno: \(c^2 = a^2 + b^2 - 2ab\cos(\gamma)\).
       </div>
     </details>
   </div>
@@ -55,7 +61,7 @@
       <ol class="ladder space-y-1">
         {% for prize in ladder %}
           {% with idx=forloop.revcounter %}
-            <li class="bg-slate-700 {% if idx == current_index %}actual{% elif idx < current_index %}ganado{% endif %} {% if idx in safe_havens %}safe{% endif %}">
+            <li class="bg-slate-700 {% if idx == current_index %}actual{% elif idx < current_index %}ganado{% endif %} {% if safe_havens and idx in safe_havens %}safe{% endif %}">
               {{ prize }}
             </li>
           {% endwith %}
@@ -69,10 +75,11 @@
 
 {% block scripts %}
 <script>
-// === Cronómetro de 2 minutos ===
+// === Cronómetro de 10 minutos ===
 (function(){
-  var totalSeconds = 120; // 2:00
+  var totalSeconds = 600; // 10:00
   var timerEl = document.getElementById('timer');
+
   var tick = setInterval(function(){
     totalSeconds--;
     var m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
@@ -82,10 +89,18 @@
     if (totalSeconds <= 0) {
       clearInterval(tick);
       alert('⏰ ¡Se acabó el tiempo!');
-      // Vamos al resultado marcando timeout=1 para que el servidor calcule el premio asegurado
+      // Ir al resultado marcando timeout para aplicar premio asegurado (si lo usas)
       window.location.href = "{% url 'core:result' %}?timeout=1";
     }
   }, 1000);
+
+  // Si el usuario envía respuesta, detenemos el contador
+  const form = document.getElementById('answer-form');
+  if (form) {
+    form.addEventListener('submit', function(){
+      clearInterval(tick);
+    });
+  }
 })();
 </script>
 {% endblock %}
